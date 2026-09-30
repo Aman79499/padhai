@@ -104,6 +104,12 @@ nav.tabs[hidden]{display:none}
 @keyframes pulse{50%{opacity:.7}}
 .heard{font-size:18px;font-weight:700;margin-top:8px;min-height:1.5em}
 .heard.ok{color:var(--leaf)}.heard.no{color:var(--rose)}
+.install{margin-top:16px;background:var(--card);border:2px solid var(--line);border-radius:22px;padding:14px 16px;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.install[hidden],.install [hidden]{display:none!important}
+.install b{font-size:19px}
+.install span{color:var(--soft);font-size:15px}
+.install .acts{display:flex;gap:8px;flex-wrap:wrap}
+.install a.btn{text-decoration:none;display:inline-block}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -122,6 +128,13 @@ nav.tabs[hidden]{display:none}
       <button class="lang hi" data-l="hi"><span class="g">अ</span><span><span class="n">हिंदी</span><br><span class="d">Hindi · अक्षर, मात्रा, शब्द</span></span><span class="st" id="st-hi">⭐ 0</span></button>
       <button class="lang pa" data-l="pa"><span class="g">ੳ</span><span><span class="n" style="font-family:'Baloo Paaji 2',sans-serif">ਪੰਜਾਬੀ</span><br><span class="d">Punjabi · ਪੈਂਤੀ, ਲਗਾਂ ਮਾਤਰਾਂ</span></span><span class="st" id="st-pa">⭐ 0</span></button>
       <button class="lang en" data-l="en"><span class="g">A</span><span><span class="n">English</span><br><span class="d">Letters, sounds, words</span></span><span class="st" id="st-en">⭐ 0</span></button>
+    </div>
+    <div class="install" id="installBox" hidden>
+      <div><b>📲 Get Padhai on this phone</b><br><span id="installText">Install it like a normal app. Works without internet too.</span></div>
+      <div class="acts">
+        <button class="btn primary" id="installBtn" hidden>Install app</button>
+        <a class="btn ghost" id="apkBtn" hidden download>Download APK</a>
+      </div>
     </div>
     <p class="tip">15 minutes a day works best.</p>
   </section>
@@ -594,6 +607,33 @@ $('#rMic').onclick=()=>{
     }
   },msg=>{if(msg)setHeard('#rHeard',msg,'no')});
 };
+
+/* ================= install button (shows when someone opens the shared link) ================= */
+// Optional: after you make an APK with PWABuilder, upload it to GitHub and put its file name here, e.g. 'padhai.apk'
+const APK_FILE='';
+let installEvent=null;
+const isInstalled=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+function showInstall(){
+  if(isInstalled()){$('#installBox').hidden=true;return}
+  const box=$('#installBox'),txt=$('#installText'),btn=$('#installBtn'),apk=$('#apkBtn');
+  btn.hidden=!installEvent;
+  apk.hidden=!APK_FILE||isIOS;if(APK_FILE)apk.href=APK_FILE;
+  if(installEvent)txt.textContent='Install it like a normal app. Works without internet too.';
+  else if(isIOS)txt.textContent='On iPhone: tap the Share button ⬆️ at the bottom of Safari, then "Add to Home Screen".';
+  else txt.textContent='To install: open this link in Chrome, tap the ⋮ menu, then "Install app" or "Add to Home screen".';
+  box.hidden=false;
+}
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installEvent=e;showInstall()});
+$('#installBtn').onclick=async()=>{
+  if(!installEvent)return;
+  installEvent.prompt();
+  try{await installEvent.userChoice}catch(e){}
+  installEvent=null;showInstall();
+};
+window.addEventListener('appinstalled',()=>{installEvent=null;$('#installText').textContent='Installed! Open Padhai from your home screen.';$('#installBtn').hidden=true});
+// give Chrome a moment to offer the install button; if it doesn't, show the manual steps
+setTimeout(showInstall,2500);
 
 /* ================= start ================= */
 homeStars();

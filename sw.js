@@ -1,5 +1,5 @@
 // Padhai offline cache. Change VERSION whenever you upload a new index.html.
-const VERSION = 'padhai-v5';
+const VERSION = 'padhai-v6';
 const SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-maskable-512.png', './apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
