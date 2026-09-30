@@ -98,6 +98,12 @@ nav.tabs[hidden]{display:none}
 .weak{margin-top:8px}
 .weak h3{margin:0 0 4px;font-size:20px;font-family:"Baloo 2",sans-serif}
 .empty{color:var(--soft);font-size:16px}
+.pic img.pic-big{width:min(160px,42vw);height:min(160px,42vw);object-fit:cover;border-radius:22px;display:block;margin:0 auto 6px;background:var(--tile)}
+.tile small img.pic-mini{width:52px;height:52px;object-fit:cover;border-radius:10px;display:block;margin:2px auto 0}
+.btn.rec{background:var(--rose);color:#fff;animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.7}}
+.heard{font-size:18px;font-weight:700;margin-top:8px;min-height:1.5em}
+.heard.ok{color:var(--leaf)}.heard.no{color:var(--rose)}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -142,7 +148,8 @@ nav.tabs[hidden]{display:none}
       <div class="tiles" id="wTiles"></div>
       <div class="big word" id="wBig"></div>
       <div class="hint">Tap each coloured part, then say the whole word</div>
-      <div class="row"><button class="btn primary" id="wSay">🔊 Say whole word</button></div>
+      <div class="row"><button class="btn primary" id="wSay">🔊 Say whole word</button><button class="btn ghost" id="wMic">🎤 Say a word</button></div>
+      <div class="heard" id="wHeard"></div>
     </div>
     <p class="label">Choose a level</p>
     <div class="chips" id="wLevels"></div>
@@ -167,6 +174,8 @@ nav.tabs[hidden]{display:none}
       <div class="pic" id="rPic"></div>
       <div class="big word" id="rBig"></div>
       <div class="hint" id="rHint"></div>
+      <div class="row"><button class="btn primary" id="rMic">🎤 Read to me</button></div>
+      <div class="heard" id="rHeard"></div>
       <div class="row"><button class="btn good" id="rOk">✓ Read correctly</button><button class="btn bad" id="rNo">Needs practice</button></div>
       <div class="row"><button class="btn ghost" id="rHear">🔊 Hear it</button><button class="btn ghost" id="rShow">Show picture</button><button class="btn ghost" id="rNext">Next word</button></div>
     </div>
@@ -182,7 +191,7 @@ nav.tabs[hidden]{display:none}
 
 <script>
 /* ================= helpers ================= */
-let cur=null,P=null; // current language (declared first: the voice check uses it)
+let cur=null,P=null,readTries=0; // declared first: used by functions that run at startup
 const $=s=>document.querySelector(s);
 function el(tag,cls,html){const e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;return e}
 const pick=a=>a[Math.floor(Math.random()*a.length)];
@@ -287,6 +296,38 @@ const PACKS={
 };
 // "mug" emoji fix: use cup-like
 PACKS.en.levels[4].words[4][2]='🫖';
+
+/* ================= pictures (images/ folder) ================= */
+// Format:  'file-name': 'words that use this picture (any language, separated by spaces)'
+// The picture file must be at images/<file-name>.jpg  e.g. images/lotus.jpg
+// Words without a picture file keep showing their emoji, so you can add pictures slowly.
+const IMAGES={
+ lotus:'कमल ਕਮਲ', water:'जल पानी ਜਲ ਪਾਣੀ', house:'घर ਘਰ', tap:'नल ਨਲ', bus:'बस ਬਸ bus', fruit:'फल ਫਲ', peas:'मटर ਮਟਰ',
+ pen:'कलम ਕਲਮ pen', duck:'बतख duck', road:'सड़क ਸੜਕ', wheat:'ਕਣਕ', nose:'नाक ਨੱਕ nose', ear:'कान', cow:'गाय', king:'राजा ਰਾਜਾ',
+ garland:'माला', lock:'ताला ਤਾਲਾ', cloud:'बादल ਬੱਦਲ', hand:'हाथ', tea:'चाय ਚਾਹ', boat:'नाव नौका ਨੌਕਾ', car:'ਕਾਰ', star:'ਤਾਰਾ',
+ mother:'ਮਾਤਾ ਮਾਂ', carrot:'ਗਾਜਰ', saag:'ਸਾਗ', day:'दिन ਦਿਨ', heart:'दिल ਦਿਲ', fort:'किला', farmer:'ਕਿਸਾਨ', father:'पिता ਪਿਤਾ',
+ glass:'गिलास ਗਿਲਾਸ', deer:'हिरन ਹਿਰਨ', book:'ਕਿਤਾਬ', fish:'मछली ਮੱਛੀ fish', cheetah:'चीता ਚੀਤਾ', kheer:'खीर ਖੀਰ', river:'नदी ਨਦੀ',
+ elephant:'हाथी ਹਾਥੀ', watch:'घड़ी ਘੜੀ', arrow:'ਤੀਰ', rose:'गुलाब ਗੁਲਾਬ', quiet:'चुप', bulbul:'बुलबुल ਬੁਲਬੁਲ', crown:'मुकुट ਮੁਕਟ',
+ needle:'सुई ਸੂਈ', jaggery:'गुड़ ਗੁੜ', chair:'ਕੁਰਸੀ', flower:'फूल ਫੁੱਲ', sun:'सूरज ਸੂਰਜ sun', shoe:'जूता ਜੁੱਤੀ', bear:'भालू ਭਾਲੂ',
+ potato:'आलू ਆਲੂ', swing:'झूला ਝੂਲਾ', pigeon:'कबूतर ਕਬੂਤਰ', watermelon:'ਤਰਬੂਜ਼', tree:'पेड़', banana:'केला ਕੇਲਾ', apple:'सेब ਸੇਬ',
+ train:'रेल ਰੇਲ', lion:'शेर ਸ਼ੇਰ', fair:'मेला ਮੇਲਾ', ber:'ਬੇਰ', ox:'बैल', foot:'पैर ਪੈਰ', 'cloth-bag':'थैला ਥੈਲਾ', money:'पैसा ਪੈਸਾ',
+ ground:'मैदान ਮੈਦਾਨ', camera:'ਕੈਮਰਾ', peacock:'मोर ਮੋਰ', parrot:'तोता ਤੋਤਾ', horse:'घोड़ा ਘੋੜਾ', roti:'रोटी ਰੋਟੀ', dhol:'ढोल ਢੋਲ',
+ cauliflower:'गोभी ਗੋਭੀ', crow:'कौआ', soldier:'फौजी ਫ਼ੌਜੀ', running:'दौड़ ਦੌੜ', weather:'मौसम ਮੌਸਮ', rice:'ਚੌਲ', bowl:'ਕੌਲੀ',
+ kite:'पतंग ਪਤੰਗ kite', monkey:'बंदर ਬਾਂਦਰ', grapes:'अंगूर ਅੰਗੂਰ', orange:'संतरा ਸੰਤਰਾ', conch:'शंख', comb:'कंघा ਕੰਘਾ',
+ dog:'ਕੁੱਤਾ dog', cat:'ਬਿੱਲੀ cat', shell:'shell',
+ bat:'bat', hat:'hat', map:'map', van:'van', bag:'bag', jam:'jam', fan:'fan', hen:'hen', bed:'bed', net:'net', jet:'jet', leg:'leg',
+ ten:'ten', web:'web', pig:'pig', lip:'lip', pin:'pin', six:'six', bin:'bin', zip:'zip', kit:'kit', pot:'pot', box:'box', fox:'fox',
+ mop:'mop', log:'log', hot:'hot', cup:'cup', bug:'bug', mug:'mug', nut:'nut', ship:'ship', shop:'shop', chick:'chick', bath:'bath',
+ thumb:'thumb', cake:'cake', bike:'bike', rope:'rope', bone:'bone', cube:'cube', lake:'lake'
+};
+const IMG_EXT='.jpg';
+const WORD_IMG={};for(const f in IMAGES)IMAGES[f].split(' ').forEach(w=>WORD_IMG[w]=f);
+function picHTML(w,cls){
+  const f=WORD_IMG[w[0]];
+  if(!f)return w[2];
+  return `<img class="${cls}" src="images/${f}${IMG_EXT}" alt="" data-e="${w[2]}" loading="lazy" onerror="picFail(this)">`;
+}
+function picFail(img){img.replaceWith(document.createTextNode(img.dataset.e||''))}
 
 /* ================= speech ================= */
 let voices={hi:null,pa:null,en:null};
@@ -413,7 +454,7 @@ $('#mPlay').onclick=()=>{
 
 /* ================= 3 words ================= */
 function showWord(w){
-  $('#wPic').textContent=w[2];$('#wBig').textContent=w[0];
+  $('#wPic').innerHTML=picHTML(w,'pic-big');$('#wBig').textContent=w[0];
   const t=$('#wTiles');t.innerHTML='';
   w[1].split('|').forEach(p=>{const b=el('button','syl',p);b.onclick=()=>say(P.part(p),0.7);t.append(b)});
   $('#wSay').onclick=()=>say(w[0],0.75);
@@ -424,7 +465,7 @@ function renderWords(){
   P.levels.forEach((l,i)=>{const b=el('button','chip'+(i===S.wl?' on':''),l.label+(S.seen.includes(i)?' <i>✓</i>':''));b.onclick=()=>{S.wl=i;store.set('wl',i);renderWords()};c.append(b)});
   if(!S.seen.includes(S.wl)){S.seen.push(S.wl);store.set('seen',S.seen)}
   const g=$('#wGrid');g.innerHTML='';
-  P.levels[S.wl].words.forEach(w=>{const b=el('button','tile w',`${w[0]}<small>${w[2]}</small>`);b.onclick=()=>{showWord(w);setOn(g,b);say(w[0],0.75);window.scrollTo({top:0,behavior:'smooth'})};g.append(b)});
+  P.levels[S.wl].words.forEach(w=>{const b=el('button','tile w',`${w[0]}<small>${picHTML(w,'pic-mini')}</small>`);b.onclick=()=>{showWord(w);setOn(g,b);say(w[0],0.75);window.scrollTo({top:0,behavior:'smooth'})};g.append(b)});
   showWord(P.levels[S.wl].words[0]);setOn(g,g.children[0]);
 }
 
@@ -479,7 +520,7 @@ function renderReadLevels(){
   P.levels.forEach((l,i)=>{const b=el('button','chip'+(i===r.lvl?' on':''),l.label);b.onclick=()=>{r.lvl=i;store.set('rl',i);renderReadLevels();nextRead()};c.append(b)});
   const b=el('button','chip'+(r.lvl===-1?' on':''),'⚑ Practice list');b.onclick=()=>{r.lvl=-1;store.set('rl',-1);renderReadLevels();nextRead()};c.append(b);
 }
-function setRead(w){if(!w)return;S.r.word=w;$('#rBig').textContent=w[0];$('#rPic').textContent='';$('#rHint').textContent='Read it aloud. A grown-up marks it.'}
+function setRead(w){if(!w)return;S.r.word=w;readTries=0;const h=$('#rHeard');if(h){h.textContent='';h.className='heard'}$('#rBig').textContent=w[0];$('#rPic').textContent='';$('#rHint').textContent='Read it aloud. A grown-up marks it.'}
 function nextRead(){
   if(!P)return;
   const r=S.r,pool=r.lvl===-1?S.weak.map(w=>ALL[w]).filter(Boolean):P.levels[r.lvl].words;
@@ -490,9 +531,69 @@ function nextRead(){
 $('#rOk').onclick=()=>{const w=S.r.word;if(!w)return;addStar();removeWeak(w[0]);say(P.praise);setTimeout(nextRead,700)};
 $('#rNo').onclick=()=>{const w=S.r.word;if(!w)return;addWeak(w[0]);const p=w[1].split('|');say(p.map(P.part).join('. ')+'. '+w[0],0.65);$('#rHint').textContent=p.join(' + ')+' = '+w[0]};
 $('#rHear').onclick=()=>{if(S.r.word)say(S.r.word[0],0.75)};
-$('#rShow').onclick=()=>{if(S.r.word)$('#rPic').textContent=S.r.word[2]};
+$('#rShow').onclick=()=>{if(S.r.word)$('#rPic').innerHTML=picHTML(S.r.word,'pic-big')};
 $('#rNext').onclick=nextRead;
 $('#rClear').onclick=()=>{S.weak=[];store.set('weak',S.weak);renderWeak()};
+
+/* ================= microphone: child speaks, app recognises ================= */
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+const REC_LANG={hi:'hi-IN',pa:'pa-IN',en:'en-IN'};
+function norm(t){return (t||'').normalize('NFC').toLowerCase().replace(/[.,!?।|'"\-]/g,' ').replace(/\s+/g,' ').trim()}
+function lev(a,b){const A=[...a],B=[...b];const d=Array.from({length:A.length+1},(_,i)=>[i]);for(let j=1;j<=B.length;j++)d[0][j]=j;
+  for(let i=1;i<=A.length;i++)for(let j=1;j<=B.length;j++)d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(A[i-1]===B[j-1]?0:1));return d[A.length][B.length]}
+const MIC_MSG={'not-allowed':'Allow the microphone for this site in Chrome, then try again.','service-not-allowed':'Allow the microphone for this site in Chrome, then try again.',
+  'no-speech':'I didn\'t hear anything. Tap 🎤 and speak clearly.','network':'Listening needs internet. Check the connection and try again.',
+  'audio-capture':'No microphone found on this device.','aborted':''};
+let rec=null;
+function listen(btn,label,onWords,onFail){
+  if(!SR){onFail('This browser can\'t listen. Please use Chrome on an Android phone.');return}
+  if(rec){rec.abort();return}
+  if('speechSynthesis' in window)speechSynthesis.cancel();
+  const r=new SR();rec=r;r.lang=REC_LANG[cur]||'en-IN';r.interimResults=false;r.maxAlternatives=5;
+  let done=false;const finish=(fn,arg)=>{if(done)return;done=true;fn(arg)};
+  btn.classList.add('rec');btn.textContent='🎤 Listening…';
+  r.onresult=e=>finish(onWords,[...e.results[0]].map(a=>a.transcript));
+  r.onerror=e=>finish(onFail,MIC_MSG[e.error]!==undefined?MIC_MSG[e.error]:'Could not listen ('+e.error+'). Try again.');
+  r.onend=()=>{rec=null;btn.classList.remove('rec');btn.textContent=label;finish(onFail,MIC_MSG['no-speech'])};
+  try{r.start()}catch(e){rec=null;btn.classList.remove('rec');btn.textContent=label;finish(onFail,'Could not start the microphone. Try again.')}
+}
+// does what was heard match this word?
+function heardMatches(alts,word){
+  const nw=norm(word),len=[...nw].length;
+  return alts.some(a=>{const n=norm(a);if(n===nw||n.split(' ').includes(nw))return true;
+    return len>=4&&n.split(' ').some(t=>lev(t,nw)<=1)});
+}
+// which word from this language did the child say?
+function findWord(alts){
+  const words=Object.values(ALL);
+  for(const a of alts){const n=norm(a),toks=n.split(' ');
+    for(const w of words){const nw=norm(w[0]);if(n===nw||toks.includes(nw))return w}}
+  let best=null,bd=9;
+  for(const a of alts)for(const t of norm(a).split(' '))for(const w of words){const nw=norm(w[0]);if([...nw].length<3)continue;const d=lev(t,nw);if(d<bd){bd=d;best=w}}
+  return bd<=1?best:null;
+}
+function setHeard(id,text,cls){const e=$(id);e.textContent=text;e.className='heard'+(cls?' '+cls:'')}
+
+// Words tab: say any word -> show its picture
+$('#wMic').onclick=()=>listen($('#wMic'),'🎤 Say a word',alts=>{
+  const w=findWord(alts);
+  if(w){showWord(w);setOn($('#wGrid'),null);setHeard('#wHeard','✓ '+w[0],'ok');say(w[0],0.75)}
+  else setHeard('#wHeard',`I heard "${alts[0]}". That word isn't in the list yet. Try another word.`,'no');
+},msg=>{if(msg)setHeard('#wHeard',msg,'no')});
+
+// Read tab: child reads the word aloud -> app checks it
+$('#rMic').onclick=()=>{
+  const w=S.r.word;if(!w)return;
+  listen($('#rMic'),'🎤 Read to me',alts=>{
+    if(heardMatches(alts,w[0])){
+      readTries=0;setHeard('#rHeard','✓ Correct! '+w[0],'ok');$('#rPic').innerHTML=picHTML(w,'pic-big');
+      addStar();removeWeak(w[0]);say(P.praise+' '+w[0]);setTimeout(()=>{setHeard('#rHeard','');nextRead()},1800);
+    }else{
+      readTries++;setHeard('#rHeard',`I heard "${alts[0]}". Try again!`,'no');
+      if(readTries>=2){addWeak(w[0]);readTries=0;const p=w[1].split('|');say(p.map(P.part).join('. ')+'. '+w[0],0.65);$('#rHint').textContent=p.join(' + ')+' = '+w[0]}
+    }
+  },msg=>{if(msg)setHeard('#rHeard',msg,'no')});
+};
 
 /* ================= start ================= */
 homeStars();
