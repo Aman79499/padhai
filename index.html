@@ -182,6 +182,7 @@ nav.tabs[hidden]{display:none}
 
 <script>
 /* ================= helpers ================= */
+let cur=null,P=null; // current language (declared first: the voice check uses it)
 const $=s=>document.querySelector(s);
 function el(tag,cls,html){const e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;return e}
 const pick=a=>a[Math.floor(Math.random()*a.length)];
@@ -317,7 +318,6 @@ if('speechSynthesis' in window){loadVoices();speechSynthesis.onvoiceschanged=loa
 setTimeout(()=>{voiceChecked=true;checkVoice()},1800);
 
 /* ================= storage per language ================= */
-let cur=null,P=null;
 const store={
   get(k,d,l){try{const v=localStorage.getItem(`pd_${l||cur}_${k}`);return v===null?d:JSON.parse(v)}catch(e){return d}},
   set(k,v){try{localStorage.setItem(`pd_${cur}_${k}`,JSON.stringify(v))}catch(e){}}
