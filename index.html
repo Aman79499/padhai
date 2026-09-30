@@ -440,8 +440,9 @@ function renderQuizChips(){
     P.levels.forEach((l,i)=>{const b=el('button','chip'+(i===q.lvl?' on':''),l.label);b.onclick=()=>{q.lvl=i;store.set('ql',i);renderQuizChips();nextQ()};c.append(b)});
   }
 }
-const qSpeak=t=>S.q.mode==='g1'&&P.g1.speak?P.g1.speak(t):t;
+const qSpeak=t=>P&&S.q.mode==='g1'&&P.g1.speak?P.g1.speak(t):t;
 function nextQ(){
+  if(!P)return;
   const q=S.q,o=$('#qOpts');o.innerHTML='';q.first=true;
   const opts=q.mode==='g1'?P.g1.gen(q.ch):shuffle([...P.levels[q.lvl].words]).slice(0,4).map(w=>w[0]);
   q.target=opts[0];
@@ -480,6 +481,7 @@ function renderReadLevels(){
 }
 function setRead(w){if(!w)return;S.r.word=w;$('#rBig').textContent=w[0];$('#rPic').textContent='';$('#rHint').textContent='Read it aloud. A grown-up marks it.'}
 function nextRead(){
+  if(!P)return;
   const r=S.r,pool=r.lvl===-1?S.weak.map(w=>ALL[w]).filter(Boolean):P.levels[r.lvl].words;
   if(!pool.length){r.word=null;$('#rBig').textContent='—';$('#rPic').textContent='';$('#rHint').textContent='The practice list is empty. Choose a level above.';return}
   let w;do{w=pick(pool)}while(pool.length>1&&r.word&&w[0]===r.word[0]);
