@@ -110,6 +110,32 @@ nav.tabs[hidden]{display:none}
 .install span{color:var(--soft);font-size:15px}
 .install .acts{display:flex;gap:8px;flex-wrap:wrap}
 .install a.btn{text-decoration:none;display:inline-block}
+.lang.gr{background:#D9C8FF}
+.topics{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.topic{border:2px solid var(--line);background:var(--card);border-radius:22px;padding:12px 10px;text-align:center}
+.topic .te{font-size:44px;line-height:1.2;display:block}
+.topic b{font-size:19px;display:block;line-height:1.2}
+.topic span{font-size:13px;color:var(--soft);display:block}
+.topic i{font-style:normal;color:var(--leaf);font-weight:800}
+.gshow{min-height:110px;display:flex;align-items:center;justify-content:center;font-size:84px;line-height:1.1}
+.gshow img{width:min(170px,44vw);height:min(170px,44vw);object-fit:cover;border-radius:22px}
+.gshow .many{font-size:56px;letter-spacing:4px}
+.gword{font-size:clamp(44px,13vw,80px);font-weight:800;line-height:1.2;margin-top:6px}
+.gword .v,.vow{color:var(--rose)}
+.gtip{background:var(--tile);border-radius:14px;padding:8px 12px;font-size:15px;color:var(--soft);margin:0 0 12px}
+.gopt{font-size:clamp(24px,7vw,34px);padding:10px 6px}
+.scene{position:relative;width:230px;height:180px;margin:0 auto;font-size:16px}
+.scene span{position:absolute;line-height:1;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
+.lang.wb{background:#BFE8E4}
+.mean .mh,.mean .mp{display:block;line-height:1.35}
+.mean .mh{font-family:"Baloo 2",sans-serif}
+.mean .mp{font-family:"Baloo Paaji 2","Noto Sans Gurmukhi",sans-serif}
+#gSub .mean{font-size:24px;font-weight:700;color:var(--ink)}
+#gSub .exs{font-style:italic;margin-top:6px}
+.gshow .mean{font-size:34px;font-weight:800;color:var(--ink)}
+.mopt{font-size:19px!important;font-weight:700;line-height:1.3}
+.pdflink[hidden]{display:none!important}
+.pdflink{display:inline-block;text-decoration:none;margin-top:14px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -128,6 +154,8 @@ nav.tabs[hidden]{display:none}
       <button class="lang hi" data-l="hi"><span class="g">अ</span><span><span class="n">हिंदी</span><br><span class="d">Hindi · अक्षर, मात्रा, शब्द</span></span><span class="st" id="st-hi">⭐ 0</span></button>
       <button class="lang pa" data-l="pa"><span class="g">ੳ</span><span><span class="n" style="font-family:'Baloo Paaji 2',sans-serif">ਪੰਜਾਬੀ</span><br><span class="d">Punjabi · ਪੈਂਤੀ, ਲਗਾਂ ਮਾਤਰਾਂ</span></span><span class="st" id="st-pa">⭐ 0</span></button>
       <button class="lang en" data-l="en"><span class="g">A</span><span><span class="n">English</span><br><span class="d">Letters, sounds, words</span></span><span class="st" id="st-en">⭐ 0</span></button>
+      <button class="lang gr" data-l="gr"><span class="g">✏️</span><span><span class="n">English Grammar</span><br><span class="d">Vowels, action words, opposites and more</span></span><span class="st" id="st-gr">⭐ 0</span></button>
+      <button class="lang wb" data-l="wb"><span class="g">📖</span><span><span class="n">Word Book</span><br><span class="d">153 English words · हिंदी + <span style="font-family:'Baloo Paaji 2',sans-serif">ਪੰਜਾਬੀ</span> meanings</span></span><span class="st" id="st-wb">⭐ 0</span></button>
     </div>
     <div class="install" id="installBox" hidden>
       <div><b>📲 Get Padhai on this phone</b><br><span id="installText">Install it like a normal app. Works without internet too.</span></div>
@@ -140,6 +168,43 @@ nav.tabs[hidden]{display:none}
   </section>
 
   <div id="voiceNote" class="note" hidden></div>
+
+  <section class="panel" id="gtopics" hidden>
+    <p class="hello-sub" style="margin-top:4px">Pick a topic. Learn first, then play the game.</p>
+    <div class="topics" id="gList"></div>
+    <a class="btn ghost pdflink" id="pdfLink" href="English-Word-Book.pdf" download hidden>📄 Download the Word Book PDF</a>
+  </section>
+
+  <section class="panel" id="gtopic" hidden>
+    <div class="chips" id="gSeg">
+      <button class="chip" data-m="learn">📘 Learn</button>
+      <button class="chip" data-m="play">🎮 Play</button>
+    </div>
+    <p class="gtip" id="gTip"></p>
+    <div id="gLearn">
+      <div class="slate">
+        <div class="gshow" id="gShow"></div>
+        <div class="gword" id="gWord"></div>
+        <div class="hint" id="gSub"></div>
+        <div class="row">
+          <button class="btn ghost" id="gPrev">‹</button>
+          <button class="btn primary" id="gSay">🔊 Listen</button>
+          <button class="btn ghost" id="gNext">›</button>
+        </div>
+        <div class="hint" id="gCount"></div>
+      </div>
+      <div class="grid wide" id="gGrid"></div>
+    </div>
+    <div id="gPlay" hidden>
+      <div class="slate">
+        <div class="gshow" id="qgShow"></div>
+        <div class="hint" id="qgPrompt" style="font-size:20px;font-weight:700;color:var(--ink)"></div>
+        <div class="row" style="margin-top:6px"><button class="btn ghost" id="qgSpeak">🔊 Hear again</button></div>
+        <div class="hint" id="qgScore"></div>
+      </div>
+      <div class="opts" id="qgOpts"></div>
+    </div>
+  </section>
 
   <section class="panel" id="letters" hidden>
     <div class="slate"><div class="big" id="lBig"></div><div class="hint" id="lHint">Tap a letter to hear it</div></div>
@@ -356,8 +421,19 @@ function say(t,rate){
   if(!('speechSynthesis' in window)||!cur)return null;
   speechSynthesis.cancel();let u;
   if(cur==='pa'&&!voices.pa&&voices.hi){u=new SpeechSynthesisUtterance(toDeva(t));u.voice=voices.hi;u.lang='hi-IN'}
-  else{u=new SpeechSynthesisUtterance(t);const v=voices[cur];if(v){u.voice=v;u.lang=v.lang}else u.lang={hi:'hi-IN',pa:'pa-IN',en:'en-IN'}[cur]}
+  else{u=new SpeechSynthesisUtterance(t);const vk=(cur==='gr'||cur==='wb')?'en':cur;const v=voices[vk];if(v){u.voice=v;u.lang=v.lang}else u.lang={hi:'hi-IN',pa:'pa-IN',en:'en-IN'}[vk]}
   u.rate=rate||0.8;speechSynthesis.speak(u);return u;
+}
+// speak several parts one after another, each in its own language: [[text,'en'],[text,'hi'],...]
+function makeUtter(t,vk,rate){
+  let u;
+  if(vk==='pa'&&!voices.pa&&voices.hi){u=new SpeechSynthesisUtterance(toDeva(t));u.voice=voices.hi;u.lang='hi-IN'}
+  else{u=new SpeechSynthesisUtterance(t);const v=voices[vk];if(v){u.voice=v;u.lang=v.lang}else u.lang={hi:'hi-IN',pa:'pa-IN',en:'en-IN'}[vk]}
+  u.rate=rate||0.8;return u;
+}
+function sayMany(parts,rate){
+  if(!('speechSynthesis' in window))return;
+  speechSynthesis.cancel();parts.forEach(([t,vk])=>speechSynthesis.speak(makeUtter(t,vk,rate)));
 }
 function checkVoice(){
   const n=$('#voiceNote');if(!cur){n.hidden=true;return}
@@ -379,7 +455,7 @@ const store={
 let stars=0,ALL={},S={};
 function showStars(){$('#stars').textContent='⭐ '+stars}
 function addStar(){stars++;store.set('stars',stars);showStars()}
-function homeStars(){['hi','pa','en'].forEach(l=>$('#st-'+l).textContent='⭐ '+store.get('stars',0,l))}
+function homeStars(){['hi','pa','en','gr','wb'].forEach(l=>$('#st-'+l).textContent='⭐ '+store.get('stars',0,l))}
 
 /* ================= navigation ================= */
 const TAB_IDS=['letters','step2','words','quiz','read'];
@@ -418,8 +494,8 @@ function showTab(t){
   if(t==='quiz'&&!S.q.target)nextQ();
   if(t==='read'&&!S.r.word)nextRead();
 }
-document.querySelectorAll('.lang').forEach(b=>b.onclick=()=>openLang(b.dataset.l));
-$('#back').onclick=goHome;
+document.querySelectorAll('.lang').forEach(b=>b.onclick=()=>(b.dataset.l==='gr'||b.dataset.l==='wb')?openGrammar(b.dataset.l):openLang(b.dataset.l));
+$('#back').onclick=()=>{if((cur==='gr'||cur==='wb')&&!$('#gtopic').hidden)openGrammar(cur);else goHome()};
 function setOn(box,btn){box.querySelectorAll('.on').forEach(x=>x.classList.remove('on'));if(btn)btn.classList.add('on')}
 
 /* ================= 1 letters ================= */
@@ -548,6 +624,146 @@ $('#rShow').onclick=()=>{if(S.r.word)$('#rPic').innerHTML=picHTML(S.r.word,'pic-
 $('#rNext').onclick=nextRead;
 $('#rClear').onclick=()=>{S.weak=[];store.set('weak',S.weak);renderWeak()};
 
+/* ================= ENGLISH GRAMMAR ================= */
+// Picture: uses images/<name>.jpg if uploaded, otherwise the emoji
+function gPic(e,img){return img?`<img src="images/${img}${IMG_EXT}" alt="" data-e="${e}" onerror="picFail(this)">`:e}
+const vowelize=w=>w.replace(/[aeiou]/gi,m=>`<span class="v">${m}</span>`);
+const VOWELS5=[['a','apple','🍎'],['e','egg','🥚'],['i','insect','🐛'],['o','orange','🍊'],['u','umbrella','☂️']];
+const VERBS=[['run','🏃','I run fast.'],['walk','🚶','I walk to school.'],['jump','🦘','The kangaroo can jump.'],['eat','😋','I eat my food.'],['drink','🥤','I drink water.'],['sleep','😴','I sleep at night.'],['read','📖','I read a book.'],['write','✍️','I write my name.'],['swim','🏊','I swim in the pool.'],['dance','💃','She can dance.'],['sing','🎤','I sing a song.'],['cry','😢','The baby can cry.'],['laugh','😂','We laugh a lot.'],['clap','👏','Clap your hands.'],['cook','🧑‍🍳','Mom can cook.'],['play','⚽','We play ball.'],['wash','🧼','Wash your hands.'],['ride','🚲','I ride a bike.'],['climb','🧗','I climb up.'],['brush','🪥','Brush your teeth.']];
+const NOUNS=[['teacher','🧑‍🏫','person'],['doctor','🧑‍⚕️','person'],['baby','👶','person'],['farmer','🧑‍🌾','person'],['dog','🐶','animal'],['cow','🐄','animal'],['lion','🦁','animal'],['fish','🐟','animal'],['school','🏫','place'],['park','🏞️','place'],['home','🏠','place'],['hospital','🏥','place'],['ball','⚽','thing'],['book','📖','thing'],['chair','🪑','thing'],['cup','☕','thing']];
+const NOUN_KIND={person:'Person 🧑',animal:'Animal 🐾',place:'Place 📍',thing:'Thing 🧸'};
+const OPP=[['big','🐘','small','🐭'],['hot','🔥','cold','🧊'],['happy','😀','sad','😢'],['fast','🐇','slow','🐢'],['tall','🦒','short','🐧'],['up','⬆️','down','⬇️'],['day','☀️','night','🌙'],['old','👴','young','👶'],['open','📖','closed','📕'],['full','🥛','empty','🫙']];
+const PLURAL=[['cat','cats','🐱'],['dog','dogs','🐶'],['apple','apples','🍎'],['ball','balls','⚽'],['box','boxes','📦'],['bus','buses','🚌'],['child','children','🧒'],['mouse','mice','🐭'],['foot','feet','🦶'],['man','men','👨']];
+const ARTICLE=[['apple','🍎'],['egg','🥚'],['orange','🍊'],['umbrella','☂️'],['ant','🐜'],['owl','🦉'],['elephant','🐘'],['ice cream','🍦'],['ball','⚽'],['cat','🐱'],['dog','🐶'],['book','📖'],['kite','🪁'],['banana','🍌'],['tree','🌳'],['pen','🖊️']];
+const anOf=w=>/^[aeiou]/i.test(w)?'an':'a';
+const PRON=[['he','👦','a boy','Ravi is a boy. He is happy.'],['she','👧','a girl','Riya is a girl. She can sing.'],['it','🐶','a dog','This is a dog. It is small.'],['they','👨‍👩‍👧','a family','They are my family.'],['I','🙋','me','I am a student.'],['we','👫','you and me','We play together.'],['you','🫵','the person I talk to','You are my friend.']];
+const PREP=['in','on','under','above','next to','between','in front of','behind'];
+function scene(k){
+  const S=(e,x,y,size,z)=>`<span style="left:${x}px;bottom:${y}px;font-size:${size}px;z-index:${z||1}">${e}</span>`;
+  const box=(x)=>S('📦',x,30,80,2);
+  const parts={
+    'in':S('🐱',88,72,48,1)+S('🧺',70,20,90,2),
+    'on':box(75)+S('🐱',92,104,48,3),
+    'under':S('☂️',62,62,100,2)+S('🐱',90,12,48,3),
+    'above':box(75)+S('🐦',95,140,38,3),
+    'next to':box(40)+S('🐱',140,32,52,3),
+    'between':S('📦',5,30,70,2)+S('🐱',90,34,50,3)+S('📦',155,30,70,2),
+    'in front of':box(75)+S('🐱',85,8,64,3),
+    'behind':S('🐱',118,82,46,1)+box(75)
+  };
+  return `<div class="scene">${parts[k]}</div>`;
+}
+const PREP_SENT={'in':'The cat is in the basket.','on':'The cat is on the box.','under':'The cat is under the umbrella.','above':'The bird is above the box.','next to':'The cat is next to the box.','between':'The cat is between the boxes.','in front of':'The cat is in front of the box.','behind':'The cat is behind the box.'};
+const many=(e,n)=>`<span class="many">${e.repeat(n)}</span>`;
+const others=(list,ans,n)=>shuffle(list.filter(x=>x!==ans)).slice(0,n);
+
+const TOPICS=[
+ {id:'vowels',e:'🔤',t:'Vowels',d:'a e i o u',tip:'There are 5 vowels: a, e, i, o, u. All other letters are consonants. Every English word has a vowel (y sometimes works like one).',
+  cards:()=>[...VOWELS5.map(([v,w,e])=>({show:gPic(e,w),word:`<span class="v">${v}</span>`,sub:`${v} is a vowel. ${v} as in ${w}.`,say:`${v.toUpperCase()}. ${v.toUpperCase()} is a vowel. ${v.toUpperCase()} for ${w}.`})),
+    {show:'🧱',word:'b c d f g',sub:'All the other letters are consonants.',say:'All the other letters, like b, c, d, f, g, are consonants.'},
+    ...['cat','dog','sun','pen','pig','bus'].map(w=>({show:gPic(ALL_EN_EMOJI(w),w),word:vowelize(w),sub:'The pink letter is the vowel.',say:`${w}. The vowel in ${w} is ${w.match(/[aeiou]/)[0].toUpperCase()}.`}))],
+  quiz:()=>{const l=pick('abcdefghijklmnopqrstuvwxyz'.split(''));const v='aeiou'.includes(l);return{show:`<span style="font-size:110px;font-weight:800">${l}</span>`,prompt:'Is this letter a vowel or a consonant?',say:`${l.toUpperCase()}. Vowel or consonant?`,opts:['Vowel','Consonant'],ans:v?'Vowel':'Consonant',after:`${l.toUpperCase()} is a ${v?'vowel':'consonant'}.`}}},
+ {id:'verbs',e:'🏃',t:'Action words',d:'run, jump, eat',tip:'Action words (verbs) tell us what someone is doing. Ask your child to act out each word: run, jump, clap!',
+  cards:()=>VERBS.map(([w,e,s])=>({show:gPic(e,w),word:w,sub:s,say:`${w}. ${s}`})),
+  quiz:()=>{const [w,e,s]=pick(VERBS);return{show:gPic(e,w),prompt:'What are they doing?',say:'What are they doing?',opts:shuffle([w,...others(VERBS.map(v=>v[0]),w,3)]),ans:w,after:s}}},
+ {id:'nouns',e:'🧸',t:'Naming words',d:'person, animal, place, thing',tip:'Naming words (nouns) are names of a person, an animal, a place or a thing.',
+  cards:()=>NOUNS.map(([w,e,k])=>({show:gPic(e,w),word:w,sub:`A ${w} is ${k==='animal'?'an':'a'} ${k}.`,say:`${w}. A ${w} is ${k==='animal'?'an':'a'} ${k}.`})),
+  quiz:()=>{const [w,e,k]=pick(NOUNS);return{show:gPic(e,w)+'',prompt:`${w}: person, animal, place or thing?`,say:`${w}. Is it a person, an animal, a place, or a thing?`,opts:Object.values(NOUN_KIND),ans:NOUN_KIND[k],after:`A ${w} is ${k==='animal'?'an':'a'} ${k}.`}}},
+ {id:'opposites',e:'↔️',t:'Opposites',d:'big–small, hot–cold',tip:'Describing words tell us how something is. Opposites are pairs: big and small, hot and cold.',
+  cards:()=>OPP.flatMap(([a,ea,b,eb])=>[{show:gPic(ea,a),word:a,sub:`The opposite of ${a} is ${b}.`,say:`${a}. The opposite of ${a} is ${b}.`},{show:gPic(eb,b),word:b,sub:`The opposite of ${b} is ${a}.`,say:`${b}. The opposite of ${b} is ${a}.`}]),
+  quiz:()=>{const [a,ea,b,eb]=pick(OPP);const flip=Math.random()<.5;const q=flip?b:a,ans=flip?a:b;const all=OPP.flatMap(x=>[x[0],x[2]]).filter(x=>x!==q);
+    return{show:gPic(flip?eb:ea,q),prompt:`What is the opposite of "${q}"?`,say:`What is the opposite of ${q}?`,opts:shuffle([ans,...others(all,ans,3)]),ans,after:`The opposite of ${q} is ${ans}.`}}},
+ {id:'position',e:'📦',t:'Where is it?',d:'in, on, under, behind',tip:'Position words tell us where something is. Use a real box and a toy at home to practise: put the toy in, on, under the box.',
+  cards:()=>PREP.map(k=>({show:scene(k),word:k,sub:PREP_SENT[k],say:`${k}. ${PREP_SENT[k]}`})),
+  quiz:()=>{const k=pick(PREP);return{show:scene(k),prompt:k==='above'?'Where is the bird?':'Where is the cat?',say:k==='above'?'Where is the bird?':'Where is the cat?',opts:shuffle([k,...others(PREP,k,3)]),ans:k,after:PREP_SENT[k]}}},
+ {id:'plural',e:'🐱',t:'One and many',d:'cat → cats',tip:'For many things we usually add s (cats). Words ending in x or s add es (boxes). Some words change (child → children, mouse → mice).',
+  cards:()=>PLURAL.map(([one,lots,e])=>({show:`${e}&nbsp;→&nbsp;${many(e,3)}`,word:`${one} → ${lots}`,sub:`one ${one}, many ${lots}`,say:`One ${one}. Many ${lots}.`})),
+  quiz:()=>{const [one,lots,e]=pick(PLURAL);const isMany=Math.random()<.6;const wrong=lots===one+'s'?one+'es':one+'s';
+    return{show:isMany?many(e,3):e,prompt:isMany?'How do we say many?':'How do we say one?',say:isMany?'Many of them. Which word?':'Just one. Which word?',opts:shuffle([one,lots,wrong].filter((x,i,a)=>a.indexOf(x)===i)),ans:isMany?lots:one,after:isMany?`Many ${lots}.`:`One ${one}.`}}},
+ {id:'article',e:'🍎',t:'a or an',d:'a ball, an apple',tip:'We say "an" before words that start with a vowel sound (an apple, an egg) and "a" before others (a ball, a cat).',
+  cards:()=>ARTICLE.map(([w,e])=>({show:gPic(e,w),word:`${anOf(w)} ${vowelize(w.slice(0,1))}${w.slice(1)}`,sub:anOf(w)==='an'?`${w} starts with a vowel, so we say AN.`:`${w} starts with a consonant, so we say A.`,say:`${anOf(w)} ${w}.`})),
+  quiz:()=>{const [w,e]=pick(ARTICLE);return{show:gPic(e,w),prompt:`___ ${w}`,say:`Is it a ${w}, or an ${w}?`,opts:['a','an'],ans:anOf(w),after:`${anOf(w)} ${w}.`}}},
+ {id:'pronouns',e:'👧',t:'He, she, it',d:'he, she, it, they',tip:'Pronouns are small words we use instead of a name: he for a boy, she for a girl, it for a thing or animal, they for many.',
+  cards:()=>PRON.map(([p,e,who,s])=>({show:e,word:p,sub:s,say:`${p}. ${s}`})),
+  quiz:()=>{const set=PRON.slice(0,4);const [p,e,who,s]=pick(set);return{show:e,prompt:`For ${who}, we say…`,say:`For ${who}, we say?`,opts:set.map(x=>x[0]),ans:p,after:s}}}
+];
+function ALL_EN_EMOJI(w){const x=(PACKS.en.levels.flatMap(l=>l.words)).find(v=>v[0]===w);return x?x[2]:'🔤'}
+
+/* ================= WORD BOOK (153 words, Hindi + Punjabi meanings) ================= */
+// Each row: [english, emoji, hindi, punjabi, example sentence]
+const WB=[["Pointing words", "इशारा करने वाले शब्द", "ਇਸ਼ਾਰੇ ਵਾਲੇ ਸ਼ਬਦ", [["this", "👇", "यह (पास वाली चीज़)", "ਇਹ (ਨੇੜੇ ਵਾਲੀ ਚੀਜ਼)", "This is my book."], ["that", "👉", "वह (दूर वाली चीज़)", "ਉਹ (ਦੂਰ ਵਾਲੀ ਚੀਜ਼)", "That is a tree."], ["these", "👇", "ये (पास वाली कई चीज़ें)", "ਇਹ (ਨੇੜੇ ਵਾਲੀਆਂ ਕਈ ਚੀਜ਼ਾਂ)", "These are my shoes."], ["those", "👉", "वे (दूर वाली कई चीज़ें)", "ਉਹ (ਦੂਰ ਵਾਲੀਆਂ ਕਈ ਚੀਜ਼ਾਂ)", "Those are birds."], ["here", "📍", "यहाँ", "ਇੱਥੇ", "Come here."], ["there", "➡️", "वहाँ", "ਉੱਥੇ", "The ball is there."]]], ["Question words", "प्रश्न वाले शब्द", "ਸਵਾਲ ਵਾਲੇ ਸ਼ਬਦ", [["what", "❓", "क्या", "ਕੀ", "What is this?"], ["who", "🧑", "कौन", "ਕੌਣ", "Who are you?"], ["where", "🗺️", "कहाँ", "ਕਿੱਥੇ", "Where is my bag?"], ["when", "⏰", "कब", "ਕਦੋਂ", "When is your birthday?"], ["why", "🤔", "क्यों", "ਕਿਉਂ", "Why are you sad?"], ["how", "🙂", "कैसे", "ਕਿਵੇਂ", "How are you?"], ["which", "☝️", "कौन-सा / कौन-सी", "ਕਿਹੜਾ / ਕਿਹੜੀ", "Which pen is yours?"], ["whose", "🎒", "किसका / किसकी", "ਕਿਸਦਾ / ਕਿਸਦੀ", "Whose bag is this?"], ["how many", "🔢", "कितने", "ਕਿੰਨੇ", "How many apples?"]]], ["Person words", "व्यक्ति वाले शब्द (सर्वनाम)", "ਵਿਅਕਤੀ ਵਾਲੇ ਸ਼ਬਦ (ਪੜਨਾਂਵ)", [["I", "🙋", "मैं", "ਮੈਂ", "I am a boy."], ["you", "🫵", "तुम / आप", "ਤੂੰ / ਤੁਸੀਂ", "You are my friend."], ["he", "👦", "वह (लड़का)", "ਉਹ (ਮੁੰਡਾ)", "He is my brother."], ["she", "👧", "वह (लड़की)", "ਉਹ (ਕੁੜੀ)", "She is my sister."], ["it", "🐶", "यह / वह (चीज़ या जानवर)", "ਇਹ / ਉਹ (ਚੀਜ਼ ਜਾਂ ਜਾਨਵਰ)", "It is a dog."], ["we", "👫", "हम", "ਅਸੀਂ", "We are friends."], ["they", "👨‍👩‍👧", "वे", "ਉਹ (ਕਈ)", "They are playing."], ["me", "🙋", "मुझे / मुझको", "ਮੈਨੂੰ", "Give me water."], ["my", "🎒", "मेरा / मेरी", "ਮੇਰਾ / ਮੇਰੀ", "This is my bag."], ["your", "📘", "तुम्हारा / आपका", "ਤੇਰਾ / ਤੁਹਾਡਾ", "Is this your book?"], ["his", "🧢", "उसका (लड़के का)", "ਉਸਦਾ (ਮੁੰਡੇ ਦਾ)", "This is his cap."], ["her", "👜", "उसका / उसकी (लड़की का)", "ਉਸਦਾ / ਉਸਦੀ (ਕੁੜੀ ਦਾ)", "That is her bag."], ["our", "🏠", "हमारा / हमारी", "ਸਾਡਾ / ਸਾਡੀ", "This is our home."], ["their", "🚗", "उनका / उनकी", "ਉਹਨਾਂ ਦਾ / ਉਹਨਾਂ ਦੀ", "That is their car."]]], ["Helping words", "सहायक शब्द", "ਸਹਾਇਕ ਸ਼ਬਦ", [["am", "🙋", "हूँ", "ਹਾਂ", "I am happy."], ["is", "✅", "है", "ਹੈ", "She is tall."], ["are", "👥", "हैं / हो", "ਹਨ / ਹੋ", "They are here."], ["was", "⏪", "था / थी", "ਸੀ", "I was sick."], ["were", "⏪", "थे", "ਸਨ / ਸੀ", "We were at home."], ["has", "🤲", "के पास है (एक के लिए)", "ਕੋਲ ਹੈ (ਇੱਕ ਲਈ)", "He has a pen."], ["have", "🤲", "के पास है", "ਕੋਲ ਹੈ", "I have a cat."], ["can", "💪", "सकता है / सकती है", "ਸਕਦਾ ਹੈ / ਸਕਦੀ ਹੈ", "I can swim."], ["will", "⏩", "गा / गी / गे (आगे होगा)", "ਗਾ / ਗੀ / ਗੇ (ਅੱਗੇ ਹੋਵੇਗਾ)", "I will go."], ["do", "❔", "करना / (प्रश्न पूछने में)", "ਕਰਨਾ / (ਸਵਾਲ ਪੁੱਛਣ ਵਿੱਚ)", "Do you like milk?"], ["does", "❔", "करता है / करती है (एक के लिए)", "ਕਰਦਾ ਹੈ / ਕਰਦੀ ਹੈ (ਇੱਕ ਲਈ)", "Does he play?"], ["not", "🚫", "नहीं", "ਨਹੀਂ", "I am not sad."]]], ["Action words", "काम वाले शब्द (क्रिया)", "ਕੰਮ ਵਾਲੇ ਸ਼ਬਦ (ਕਿਰਿਆ)", [["go", "🚶", "जाना", "ਜਾਣਾ", "I go to school."], ["come", "🏃", "आना", "ਆਉਣਾ", "Come with me."], ["eat", "😋", "खाना", "ਖਾਣਾ", "I eat an apple."], ["drink", "🥤", "पीना", "ਪੀਣਾ", "Drink some water."], ["sleep", "😴", "सोना", "ਸੌਣਾ", "I sleep at night."], ["wake up", "⏰", "जागना / उठना", "ਜਾਗਣਾ / ਉੱਠਣਾ", "I wake up early."], ["run", "🏃", "दौड़ना", "ਦੌੜਨਾ", "Dogs run fast."], ["walk", "🚶", "चलना", "ਤੁਰਨਾ", "We walk to the park."], ["sit", "🪑", "बैठना", "ਬੈਠਣਾ", "Sit on the chair."], ["stand", "🧍", "खड़े होना", "ਖੜ੍ਹੇ ਹੋਣਾ", "Stand in a line."], ["read", "📖", "पढ़ना", "ਪੜ੍ਹਨਾ", "I read a book."], ["write", "✍️", "लिखना", "ਲਿਖਣਾ", "Write your name."], ["see", "👀", "देखना", "ਦੇਖਣਾ", "I see a bird."], ["listen", "👂", "सुनना", "ਸੁਣਨਾ", "Listen to me."], ["speak", "🗣️", "बोलना", "ਬੋਲਣਾ", "Speak slowly."], ["tell", "💬", "बताना", "ਦੱਸਣਾ", "Tell me a story."], ["ask", "✋", "पूछना", "ਪੁੱਛਣਾ", "Ask your teacher."], ["play", "⚽", "खेलना", "ਖੇਡਣਾ", "Let us play."], ["give", "🎁", "देना", "ਦੇਣਾ", "Give me the pen."], ["take", "🤲", "लेना", "ਲੈਣਾ", "Take this book."], ["bring", "🧺", "लाना", "ਲਿਆਉਣਾ", "Bring your book."], ["put", "📥", "रखना", "ਰੱਖਣਾ", "Put it on the table."], ["open", "🔓", "खोलना", "ਖੋਲ੍ਹਣਾ", "Open the door."], ["close", "🚪", "बंद करना", "ਬੰਦ ਕਰਨਾ", "Close the window."], ["wash", "🧼", "धोना", "ਧੋਣਾ", "Wash your hands."], ["clean", "🧹", "साफ़ करना", "ਸਾਫ਼ ਕਰਨਾ", "Clean your room."], ["cook", "🍳", "पकाना", "ਪਕਾਉਣਾ", "Mom can cook."], ["make", "🧱", "बनाना", "ਬਣਾਉਣਾ", "Make a paper boat."], ["buy", "🛒", "खरीदना", "ਖਰੀਦਣਾ", "Buy some milk."], ["help", "🤝", "मदद करना", "ਮਦਦ ਕਰਨਾ", "Please help me."], ["call", "📞", "बुलाना / फ़ोन करना", "ਬੁਲਾਉਣਾ / ਫ਼ੋਨ ਕਰਨਾ", "Call your mother."], ["cry", "😢", "रोना", "ਰੋਣਾ", "Do not cry."], ["laugh", "😂", "हँसना", "ਹੱਸਣਾ", "We laugh a lot."], ["jump", "🐸", "कूदना", "ਛਾਲ ਮਾਰਨਾ", "Frogs jump high."], ["swim", "🏊", "तैरना", "ਤੈਰਨਾ", "Fish swim in water."], ["sing", "🎤", "गाना", "ਗਾਉਣਾ", "Sing a song."], ["dance", "💃", "नाचना", "ਨੱਚਣਾ", "She can dance."], ["know", "🧠", "जानना", "ਜਾਣਨਾ", "I know the answer."], ["think", "🤔", "सोचना", "ਸੋਚਣਾ", "Think before you speak."], ["want", "🙏", "चाहना", "ਚਾਹੁਣਾ", "I want a toy."], ["like", "👍", "पसंद करना", "ਪਸੰਦ ਕਰਨਾ", "I like mangoes."], ["love", "❤️", "प्यार करना", "ਪਿਆਰ ਕਰਨਾ", "I love my family."], ["wait", "⏳", "इंतज़ार करना", "ਉਡੀਕ ਕਰਨਾ", "Wait for me."]]], ["Position words", "जगह बताने वाले शब्द", "ਥਾਂ ਦੱਸਣ ਵਾਲੇ ਸ਼ਬਦ", [["in", "📦", "में / अंदर", "ਵਿੱਚ", "The pen is in the box."], ["on", "📚", "पर", "ਉੱਤੇ", "The book is on the table."], ["under", "🛏️", "नीचे", "ਹੇਠਾਂ", "The cat is under the bed."], ["above", "☁️", "के ऊपर", "ਦੇ ਉੱਪਰ", "The fan is above me."], ["near", "📍", "पास", "ਨੇੜੇ", "My school is near."], ["far", "🏔️", "दूर", "ਦੂਰ", "The moon is far."], ["behind", "🙈", "पीछे", "ਪਿੱਛੇ", "He is behind the door."], ["in front of", "🧍", "सामने / आगे", "ਸਾਹਮਣੇ / ਅੱਗੇ", "Stand in front of me."], ["between", "↔️", "बीच में", "ਵਿਚਕਾਰ", "Sit between us."], ["next to", "👫", "बगल में / पास में", "ਨਾਲ / ਕੋਲ", "Sit next to me."], ["inside", "🏠", "अंदर", "ਅੰਦਰ", "Come inside."], ["outside", "🌳", "बाहर", "ਬਾਹਰ", "Play outside."], ["up", "⬆️", "ऊपर", "ਉੱਪਰ", "Look up."], ["down", "⬇️", "नीचे", "ਹੇਠਾਂ", "Sit down."]]], ["Joining and small words", "जोड़ने वाले और छोटे शब्द", "ਜੋੜਨ ਵਾਲੇ ਅਤੇ ਛੋਟੇ ਸ਼ਬਦ", [["and", "➕", "और", "ਅਤੇ / ਤੇ", "Tea and biscuits."], ["or", "🔀", "या", "ਜਾਂ", "Tea or milk?"], ["but", "↩️", "लेकिन", "ਪਰ", "I am small but strong."], ["because", "💡", "क्योंकि", "ਕਿਉਂਕਿ", "I am happy because it is Sunday."], ["with", "🤝", "के साथ", "ਨਾਲ", "Come with me."], ["to", "➡️", "को / की ओर", "ਨੂੰ / ਵੱਲ", "Go to school."], ["from", "⬅️", "से", "ਤੋਂ", "I am from Punjab."], ["of", "🔗", "का / की / के", "ਦਾ / ਦੀ / ਦੇ", "A cup of tea."], ["for", "🎁", "के लिए", "ਲਈ", "This is for you."], ["a / an", "1️⃣", "एक", "ਇੱਕ", "a cat, an apple"], ["the", "☝️", "वह खास (जिसकी बात हो रही है)", "ਉਹ ਖ਼ਾਸ (ਜਿਸਦੀ ਗੱਲ ਹੋ ਰਹੀ ਹੈ)", "The sun is hot."], ["also", "➕", "भी", "ਵੀ", "I also want one."], ["very", "💯", "बहुत", "ਬਹੁਤ", "It is very hot."]]], ["Time words", "समय वाले शब्द", "ਸਮੇਂ ਵਾਲੇ ਸ਼ਬਦ", [["today", "📅", "आज", "ਅੱਜ", "Today is Monday."], ["tomorrow", "⏭️", "कल (आने वाला)", "ਕੱਲ੍ਹ (ਆਉਣ ਵਾਲਾ)", "See you tomorrow."], ["yesterday", "⏮️", "कल (बीता हुआ)", "ਕੱਲ੍ਹ (ਬੀਤਿਆ ਹੋਇਆ)", "I was sick yesterday."], ["now", "⏱️", "अब / अभी", "ਹੁਣ", "Come now."], ["later", "🕒", "बाद में", "ਬਾਅਦ ਵਿੱਚ", "Do it later."], ["before", "⏪", "पहले", "ਪਹਿਲਾਂ", "Wash your hands before eating."], ["after", "⏩", "बाद में", "ਬਾਅਦ", "Play after school."], ["always", "🔁", "हमेशा", "ਹਮੇਸ਼ਾ", "Always say thank you."], ["never", "🚫", "कभी नहीं", "ਕਦੇ ਨਹੀਂ", "Never tell lies."], ["morning", "🌅", "सुबह", "ਸਵੇਰ", "Good morning!"], ["evening", "🌇", "शाम", "ਸ਼ਾਮ", "We play in the evening."], ["night", "🌙", "रात", "ਰਾਤ", "Good night!"], ["week", "🗓️", "हफ़्ता", "ਹਫ਼ਤਾ", "A week has seven days."]]], ["Describing words", "बताने वाले शब्द (विशेषण)", "ਦੱਸਣ ਵਾਲੇ ਸ਼ਬਦ (ਵਿਸ਼ੇਸ਼ਣ)", [["big", "🐘", "बड़ा", "ਵੱਡਾ", "The elephant is big."], ["small", "🐭", "छोटा", "ਛੋਟਾ", "The mouse is small."], ["good", "👍", "अच्छा", "ਚੰਗਾ", "You are a good boy."], ["bad", "👎", "बुरा", "ਮਾੜਾ", "Junk food is bad."], ["hot", "🔥", "गरम", "ਗਰਮ", "The tea is hot."], ["cold", "🧊", "ठंडा", "ਠੰਢਾ", "Ice is cold."], ["happy", "😀", "खुश", "ਖੁਸ਼", "I am happy."], ["sad", "😢", "दुखी", "ਉਦਾਸ", "Why are you sad?"], ["fast", "🐇", "तेज़", "ਤੇਜ਼", "The rabbit is fast."], ["slow", "🐢", "धीमा", "ਹੌਲੀ", "The tortoise is slow."], ["new", "✨", "नया", "ਨਵਾਂ", "I have a new bag."], ["old", "🏚️", "पुराना", "ਪੁਰਾਣਾ", "This is an old house."], ["clean", "🧼", "साफ़", "ਸਾਫ਼", "Keep your room clean."], ["dirty", "🐷", "गंदा", "ਗੰਦਾ", "My hands are dirty."], ["full", "🥛", "भरा हुआ", "ਭਰਿਆ ਹੋਇਆ", "The glass is full."], ["empty", "🫙", "खाली", "ਖਾਲੀ", "The box is empty."], ["tall", "🦒", "लंबा", "ਲੰਮਾ", "The giraffe is tall."], ["short", "✏️", "छोटा / नाटा", "ਛੋਟਾ / ਮਧਰਾ", "The pencil is short."]]], ["Everyday words", "रोज़ बोलने वाले शब्द", "ਰੋਜ਼ ਬੋਲਣ ਵਾਲੇ ਸ਼ਬਦ", [["yes", "✅", "हाँ", "ਹਾਂ", "Yes, I can."], ["no", "❌", "नहीं", "ਨਹੀਂ", "No, thank you."], ["please", "🙏", "कृपया", "ਕਿਰਪਾ ਕਰਕੇ", "Please sit down."], ["thank you", "😊", "धन्यवाद", "ਧੰਨਵਾਦ", "Thank you, teacher."], ["sorry", "😔", "माफ़ करना", "ਮਾਫ਼ ਕਰਨਾ", "Sorry, I am late."], ["excuse me", "✋", "सुनिए / ज़रा हटिए", "ਸੁਣੋ ਜੀ / ਜ਼ਰਾ ਹਟੋ ਜੀ", "Excuse me, may I come in?"], ["hello", "👋", "नमस्ते", "ਸਤ ਸ੍ਰੀ ਅਕਾਲ / ਹੈਲੋ", "Hello, how are you?"], ["goodbye", "👋", "अलविदा / फिर मिलेंगे", "ਅਲਵਿਦਾ / ਫਿਰ ਮਿਲਾਂਗੇ", "Goodbye, see you soon."], ["welcome", "🤗", "स्वागत है", "ਜੀ ਆਇਆਂ ਨੂੰ", "You are welcome."], ["OK", "👌", "ठीक है", "ਠੀਕ ਹੈ", "OK, I will do it."], ["may I", "🙋", "क्या मैं…?", "ਕੀ ਮੈਂ…?", "May I drink water?"]]]];
+const WB_ICONS=["👉", "❓", "🙋", "✅", "🏃", "📦", "🔗", "⏰", "🐘", "👋"];
+const wbMean=r=>`<span class="mh">${r[2]}</span><span class="mp">${r[3]}</span>`;
+const WB_TOPICS=WB.map(([t,h,pa,rows],i)=>({id:'wb'+i,e:WB_ICONS[i],t,d:`${rows.length} words`,
+  tip:`${h} · ${pa}. Learn 5 words a day: hear the word, say its meaning, then read the example together.`,
+  cards:()=>rows.map(r=>({show:gPic(r[1],r[0]),word:r[0],subHtml:`<div class="mean">${wbMean(r)}</div><div class="exs">"${r[4]}"</div>`,sayParts:[[r[0],'en'],[r[2],'hi'],[r[3],'pa'],[r[4],'en']]})),
+  quiz:()=>{
+    const r=pick(rows);const pool=shuffle(rows.filter(x=>x[0]!==r[0]&&x[2]!==r[2]&&x[3]!==r[3])).slice(0,3);
+    if(Math.random()<.6)return{show:gPic(r[1],r[0]),prompt:`What does "${r[0]}" mean?`,say:`What does ${r[0]} mean?`,
+      opts:shuffle([r,...pool]).map(wbMean),ans:wbMean(r),after:`${r[0]}. ${r[4]}`,optClass:'mopt'};
+    return{show:`<div class="mean">${wbMean(r)}</div>`,prompt:'Which English word means this?',say:'Which English word means this?',sayParts:[[r[2],'hi']],
+      opts:shuffle([r,...pool]).map(x=>x[0]),ans:r[0],after:`${r[0]}. ${r[4]}`};
+  }}));
+
+const G={topic:null,mode:'learn',i:0,cards:[],q:null,first:true,right:0,total:0};
+function openGrammar(kind){
+  kind=kind==='wb'?'wb':'gr';const SET=kind==='wb'?{title:'Word Book',topics:WB_TOPICS,accent:'#1E8C93'}:{title:'English Grammar',topics:TOPICS,accent:'#7C4DDB'};
+  stopPlay();cur=kind;P=null;
+  document.documentElement.lang='en';document.body.style.fontFamily='"Baloo 2",system-ui,sans-serif';
+  document.documentElement.style.setProperty('--accent',SET.accent);document.documentElement.style.setProperty('--accent-ink','#ffffff');
+  $('#title').textContent=SET.title;$('#back').hidden=false;$('#stars').hidden=false;$('#tabs').hidden=true;
+  stars=store.get('stars',0);showStars();
+  document.querySelectorAll('.panel').forEach(p=>p.hidden=p.id!=='gtopics');
+  const seen=store.get('gseen',[]),list=$('#gList');list.innerHTML='';
+  const pl=$('#pdfLink');pl.hidden=true;
+  if(kind==='wb')fetch(pl.getAttribute('href'),{method:'HEAD'}).then(r=>{if(r.ok&&cur==='wb')pl.hidden=false}).catch(()=>{});
+  SET.topics.forEach(t=>{const b=el('button','topic',`<span class="te">${t.e}</span><b>${t.t}</b><span>${t.d}</span>${seen.includes(t.id)?'<i>✓</i>':''}`);b.onclick=()=>openTopic(t);list.append(b)});
+  checkVoice();window.scrollTo(0,0);try{localStorage.setItem('pd_last',kind)}catch(e){}
+}
+function openTopic(t){
+  G.topic=t;G.cards=t.cards();G.i=0;G.right=0;G.total=0;G.q=null;
+  const seen=store.get('gseen',[]);if(!seen.includes(t.id)){seen.push(t.id);store.set('gseen',seen)}
+  $('#title').textContent=t.t;$('#gTip').textContent='👪 '+t.tip;
+  document.querySelectorAll('.panel').forEach(p=>p.hidden=p.id!=='gtopic');
+  const g=$('#gGrid');g.innerHTML='';
+  G.cards.forEach((c,i)=>{const b=el('button','tile w',`<span style="font-size:20px">${c.word}</span>`);b.onclick=()=>{showGCard(i);speakCard(c);window.scrollTo({top:0,behavior:'smooth'})};g.append(b)});
+  setGMode('learn');showGCard(0);window.scrollTo(0,0);
+}
+function showGCard(i){
+  G.i=(i+G.cards.length)%G.cards.length;const c=G.cards[G.i];
+  $('#gShow').innerHTML=c.show;$('#gWord').innerHTML=c.word;if(c.subHtml)$('#gSub').innerHTML=c.subHtml;else $('#gSub').textContent=c.sub;$('#gCount').textContent=`${G.i+1} of ${G.cards.length}`;
+  setOn($('#gGrid'),$('#gGrid').children[G.i]);
+}
+function setGMode(m){
+  G.mode=m;document.querySelectorAll('#gSeg .chip').forEach(b=>b.classList.toggle('on',b.dataset.m===m));
+  $('#gLearn').hidden=m!=='learn';$('#gPlay').hidden=m!=='play';
+  if(m==='play')nextGQ();
+}
+document.querySelectorAll('#gSeg .chip').forEach(b=>b.onclick=()=>setGMode(b.dataset.m));
+const speakCard=c=>c.sayParts?sayMany(c.sayParts):say(c.say);
+const speakQ=(q,pre)=>sayMany([[(pre||'')+q.say,'en'],...(q.sayParts||[])],0.85);
+$('#gSay').onclick=()=>speakCard(G.cards[G.i]);
+$('#gPrev').onclick=()=>{showGCard(G.i-1);speakCard(G.cards[G.i])};
+$('#gNext').onclick=()=>{showGCard(G.i+1);speakCard(G.cards[G.i])};
+function nextGQ(){
+  if((cur!=='gr'&&cur!=='wb')||!G.topic)return;
+  let q;do{q=G.topic.quiz()}while(G.q&&q.show===G.q.show&&q.ans===G.q.ans&&Math.random()<.8);
+  G.q=q;G.first=true;
+  $('#qgShow').innerHTML=q.show;$('#qgPrompt').textContent=q.prompt;
+  const o=$('#qgOpts');o.innerHTML='';
+  q.opts.forEach(t=>{const b=el('button','tile opt gopt'+(q.optClass?' '+q.optClass:''),t);b.onclick=()=>gAnswer(b,t);o.append(b)});
+  gScore();setTimeout(()=>speakQ(q),250);
+}
+function gAnswer(b,t){
+  const q=G.q;
+  if(t===q.ans){b.classList.add('right');G.total++;if(G.first){G.right++;addStar()}
+    document.querySelectorAll('#qgOpts .opt').forEach(x=>x.disabled=true);
+    say('Well done! '+q.after,0.85);gScore();setTimeout(nextGQ,2200);
+  }else{b.classList.add('wrong');b.disabled=true;G.first=false;speakQ(q,'Try again. ')}
+}
+function gScore(){$('#qgScore').textContent=G.total?`${G.right} of ${G.total} right on the first try`:''}
+$('#qgSpeak').onclick=()=>{if(G.q)speakQ(G.q)};
+
 /* ================= microphone: child speaks, app recognises ================= */
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 const REC_LANG={hi:'hi-IN',pa:'pa-IN',en:'en-IN'};
@@ -638,7 +854,7 @@ setTimeout(showInstall,2500);
 /* ================= start ================= */
 homeStars();
 let last='';try{last=localStorage.getItem('pd_last')||''}catch(e){}
-if(PACKS[last])openLang(last);else goHome();
+if(last==='gr'||last==='wb')openGrammar(last);else if(PACKS[last])openLang(last);else goHome();
 
 /* ================= offline app (service worker) ================= */
 if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{})})}
