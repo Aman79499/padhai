@@ -153,6 +153,15 @@ nav.tabs[hidden]{display:none}
 .bpool{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
 .wt{border:2px solid var(--line);background:var(--card);border-radius:14px;padding:4px 14px;font-size:24px;font-weight:800}
 .bans .wt{background:var(--tile);border-color:var(--accent)}
+.lang.wr{background:#FFE0B8}
+.wslate{padding:12px}
+.wslate .row{gap:6px}
+.wslate .btn{padding:8px 12px;font-size:17px}
+.wbox{position:relative;width:100%;max-width:460px;margin:0 auto;aspect-ratio:4/3;border-radius:20px;background:#FFFDF6;border:2px solid var(--line);overflow:hidden;touch-action:none}
+.wbox canvas{position:absolute;inset:0;width:100%;height:100%}
+#wInk{touch-action:none;cursor:crosshair}
+#wrGrid .tile{font-size:28px}
+#wrGrid .tile.done::after{content:"⭐";display:block;font-size:12px;line-height:1}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -174,6 +183,7 @@ nav.tabs[hidden]{display:none}
       <button class="lang gr" data-l="gr"><span class="g">✏️</span><span><span class="n">English Grammar</span><br><span class="d">Vowels, action words, opposites and more</span></span><span class="st" id="st-gr">⭐ 0</span></button>
       <button class="lang wb" data-l="wb"><span class="g">📖</span><span><span class="n">Word Book</span><br><span class="d">153 English words · हिंदी + <span style="font-family:'Baloo Paaji 2',sans-serif">ਪੰਜਾਬੀ</span> meanings</span></span><span class="st" id="st-wb">⭐ 0</span></button>
       <button class="lang sn" data-l="sn"><span class="g">💬</span><span><span class="n">Sentences</span><br><span class="d">This is a cat · यह बिल्ली है · <span style="font-family:'Baloo Paaji 2',sans-serif">ਇਹ ਬਿੱਲੀ ਹੈ</span></span></span><span class="st" id="st-sn">⭐ 0</span></button>
+      <button class="lang wr" data-l="wr"><span class="g">✍️</span><span><span class="n">Write</span><br><span class="d">Trace letters and numbers with your finger</span></span><span class="st" id="st-wr">⭐ 0</span></button>
     </div>
     <div class="install" id="installBox" hidden>
       <div><b>📲 Get Padhai on this phone</b><br><span id="installText">Install it like a normal app. Works without internet too.</span></div>
@@ -186,6 +196,25 @@ nav.tabs[hidden]{display:none}
   </section>
 
   <div id="voiceNote" class="note" hidden></div>
+
+  <section class="panel" id="write" hidden>
+    <div class="chips" id="wrScript"></div>
+    <div class="chips" id="wrSet"></div>
+    <div class="slate wslate">
+      <div class="wbox" id="wBox"><canvas id="wGuide"></canvas><canvas id="wInk"></canvas></div>
+      <div class="row">
+        <button class="btn ghost" id="wrPrev" aria-label="Previous">‹</button>
+        <button class="btn ghost" id="wrHear">🔊</button>
+        <button class="btn ghost" id="wrClear">↺ Clear</button>
+        <button class="btn primary" id="wrDone">✓ Done</button>
+        <button class="btn ghost" id="wrNext" aria-label="Next">›</button>
+      </div>
+      <div class="heard" id="wrHeard"></div>
+      <div class="hint" id="wrCount"></div>
+    </div>
+    <p class="gtip">👪 Let your child trace slowly over the grey letter with one finger, starting from the top. Say the letter aloud while writing. Then try it on paper too.</p>
+    <div class="grid" id="wrGrid"></div>
+  </section>
 
   <section class="panel" id="gtopics" hidden>
     <p class="hello-sub" style="margin-top:4px">Pick a topic. Learn first, then play the game.</p>
@@ -488,7 +517,7 @@ const store={
 let stars=0,ALL={},S={};
 function showStars(){$('#stars').textContent='⭐ '+stars}
 function addStar(){stars++;store.set('stars',stars);showStars()}
-function homeStars(){['hi','pa','en','gr','wb','sn'].forEach(l=>$('#st-'+l).textContent='⭐ '+store.get('stars',0,l))}
+function homeStars(){['hi','pa','en','gr','wb','sn','wr'].forEach(l=>$('#st-'+l).textContent='⭐ '+store.get('stars',0,l))}
 
 /* ================= navigation ================= */
 const TAB_IDS=['letters','step2','words','quiz','read'];
@@ -527,7 +556,7 @@ function showTab(t){
   if(t==='quiz'&&!S.q.target)nextQ();
   if(t==='read'&&!S.r.word)nextRead();
 }
-document.querySelectorAll('.lang').forEach(b=>b.onclick=()=>G_KINDS.includes(b.dataset.l)?openGrammar(b.dataset.l):openLang(b.dataset.l));
+document.querySelectorAll('.lang').forEach(b=>b.onclick=()=>b.dataset.l==='wr'?openWrite():G_KINDS.includes(b.dataset.l)?openGrammar(b.dataset.l):openLang(b.dataset.l));
 $('#back').onclick=()=>{if(G_KINDS.includes(cur)&&!$('#gtopic').hidden)openGrammar(cur);else goHome()};
 function setOn(box,btn){box.querySelectorAll('.on').forEach(x=>x.classList.remove('on'));if(btn)btn.classList.add('on')}
 
@@ -1039,10 +1068,129 @@ window.addEventListener('appinstalled',()=>{installEvent=null;$('#installText').
 // give Chrome a moment to offer the install button; if it doesn't, show the manual steps
 setTimeout(showInstall,2500);
 
+/* ================= WRITE: trace letters with a finger ================= */
+const HI_NUM=[['०','शून्य'],['१','एक'],['२','दो'],['३','तीन'],['४','चार'],['५','पाँच'],['६','छह'],['७','सात'],['८','आठ'],['९','नौ']];
+const PA_NUM=[['੦','ਸਿਫ਼ਰ'],['੧','ਇੱਕ'],['੨','ਦੋ'],['੩','ਤਿੰਨ'],['੪','ਚਾਰ'],['੫','ਪੰਜ'],['੬','ਛੇ'],['੭','ਸੱਤ'],['੮','ਅੱਠ'],['੯','ਨੌਂ']];
+const EN_NUM=['zero','one','two','three','four','five','six','seven','eight','nine'];
+// each item: [what to trace, what to say]
+const WR={
+ hi:{label:'हिंदी',font:'"Baloo 2"',lang:'hi',sets:[
+   ['स्वर · vowels',HI_V.map(([l])=>[l,l])],
+   ['व्यंजन · consonants',HI_C.map(([l])=>[l,l])],
+   ['Words',PACKS.hi.levels[0].words.concat(PACKS.hi.levels[1].words).map(w=>[w[0],w[0]])],
+   ['Numbers',HI_NUM]]},
+ pa:{label:'ਪੰਜਾਬੀ',font:'"Baloo Paaji 2"',lang:'pa',sets:[
+   ['ਪੈਂਤੀ · letters',PA_P.map(([l,n])=>[l,n])],
+   ['ਸਵਰ · vowels',PA_V.map(([l])=>[l,l])],
+   ['Words',PACKS.pa.levels[0].words.concat(PACKS.pa.levels[1].words).map(w=>[w[0],w[0]])],
+   ['Numbers',PA_NUM]]},
+ en:{label:'English',font:'"Baloo 2"',lang:'en',sets:[
+   ['ABC · capital',EN_AZ.map(([l])=>[l.toUpperCase(),l.toUpperCase()+'.'])],
+   ['abc · small',EN_AZ.map(([l])=>[l,l.toUpperCase()+'.'])],
+   ['Words',PACKS.en.levels[0].words.concat(PACKS.en.levels[1].words).map(w=>[w[0],w[0]])],
+   ['Numbers',EN_NUM.map((n,i)=>[String(i),n])]]}
+};
+const WT={sc:'hi',set:0,i:0,drawing:false,last:null,inked:false,dpr:1};
+function wrItems(){return WR[WT.sc].sets[WT.set][1]}
+function wrKey(t){return WT.sc+'|'+t}
+function openWrite(){
+  stopPlay();cur='wr';P=null;
+  document.documentElement.lang='en';document.body.style.fontFamily='"Baloo 2",system-ui,sans-serif';
+  document.documentElement.style.setProperty('--accent','#E8743B');document.documentElement.style.setProperty('--accent-ink','#ffffff');
+  $('#title').textContent='Write';$('#back').hidden=false;$('#stars').hidden=false;$('#tabs').hidden=true;
+  stars=store.get('stars',0);showStars();
+  WT.sc=store.get('wsc','hi');WT.set=store.get('wset',0);WT.i=0;
+  document.querySelectorAll('.panel').forEach(p=>p.hidden=p.id!=='write');
+  renderWriteChips();renderWriteGrid();showTrace(0);checkVoice();window.scrollTo(0,0);
+  try{localStorage.setItem('pd_last','wr')}catch(e){}
+}
+function renderWriteChips(){
+  const a=$('#wrScript');a.innerHTML='';
+  Object.keys(WR).forEach(k=>{const b=el('button','chip'+(k===WT.sc?' on':''),WR[k].label);if(k==='pa')b.style.fontFamily='"Baloo Paaji 2",sans-serif';
+    b.onclick=()=>{WT.sc=k;WT.set=0;store.set('wsc',k);store.set('wset',0);renderWriteChips();renderWriteGrid();showTrace(0)};a.append(b)});
+  const c=$('#wrSet');c.innerHTML='';
+  WR[WT.sc].sets.forEach(([lab],i)=>{const b=el('button','chip'+(i===WT.set?' on':''),lab);if(WT.sc==='pa')b.style.fontFamily='"Baloo Paaji 2",sans-serif';
+    b.onclick=()=>{WT.set=i;store.set('wset',i);renderWriteChips();renderWriteGrid();showTrace(0)};c.append(b)});
+}
+function renderWriteGrid(){
+  const g=$('#wrGrid');g.innerHTML='';const done=store.get('wdone',[]);
+  g.className=WT.set===2?'grid wide':'grid';
+  wrItems().forEach(([t],i)=>{const b=el('button','tile'+(done.includes(wrKey(t))?' done':''),t);
+    b.style.fontFamily=WR[WT.sc].font+',sans-serif';b.onclick=()=>{showTrace(i);wrSay();window.scrollTo({top:0,behavior:'smooth'})};g.append(b)});
+}
+function wrSay(){const it=wrItems()[WT.i];if(it)sayMany([[it[1],WR[WT.sc].lang]],0.75)}
+async function showTrace(i){
+  const items=wrItems();WT.i=(i+items.length)%items.length;const t=items[WT.i][0];
+  $('#wrCount').textContent=`${WT.i+1} of ${items.length}`;setHeard('#wrHeard','');
+  setOn($('#wrGrid'),$('#wrGrid').children[WT.i]);
+  try{await document.fonts.load(`100px ${WR[WT.sc].font}`,t)}catch(e){}
+  sizeCanvases();drawGuide();clearInk();
+}
+function sizeCanvases(){
+  const box=$('#wBox'),r=box.getBoundingClientRect();WT.dpr=Math.min(window.devicePixelRatio||1,2);
+  ['#wGuide','#wInk'].forEach(id=>{const c=$(id);c.width=Math.round(r.width*WT.dpr);c.height=Math.round(r.height*WT.dpr)});
+}
+// draws the letter, fitted to the box; mode: 'guide' (grey), 'core' (exact shape), 'zone' (shape + allowed margin)
+function drawLetter(ctx,w,h,mode){
+  const t=wrItems()[WT.i][0],font=WR[WT.sc].font;
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  let size=h*0.7;ctx.font=`800 ${size}px ${font},sans-serif`;
+  const mw=ctx.measureText(t).width;if(mw>w*0.86){size=size*w*0.86/mw;ctx.font=`800 ${size}px ${font},sans-serif`}
+  const y=h*0.54;
+  if(mode==='guide'){ctx.fillStyle='#D9DEE8';ctx.fillText(t,w/2,y);ctx.setLineDash([size*0.05,size*0.05]);ctx.lineWidth=Math.max(2,size*0.012);ctx.strokeStyle='#9AA6C2';ctx.strokeText(t,w/2,y);ctx.setLineDash([])}
+  else{ctx.fillStyle='#000';ctx.fillText(t,w/2,y);if(mode==='zone'){ctx.lineJoin='round';ctx.lineWidth=size*0.16;ctx.strokeStyle='#000';ctx.strokeText(t,w/2,y)}}
+  return size;
+}
+function drawGuide(){
+  const c=$('#wGuide'),ctx=c.getContext('2d');ctx.clearRect(0,0,c.width,c.height);
+  ctx.strokeStyle='#E7EDF5';ctx.lineWidth=2*WT.dpr;[0.25,0.5,0.75].forEach(f=>{ctx.beginPath();ctx.moveTo(0,c.height*f);ctx.lineTo(c.width,c.height*f);ctx.stroke()});
+  WT.size=drawLetter(ctx,c.width,c.height,'guide');
+}
+function clearInk(){const c=$('#wInk');c.getContext('2d').clearRect(0,0,c.width,c.height);WT.inked=false}
+function inkPos(e){const r=$('#wInk').getBoundingClientRect();return[(e.clientX-r.left)*WT.dpr,(e.clientY-r.top)*WT.dpr]}
+const inkEl=$('#wInk');
+inkEl.addEventListener('pointerdown',e=>{e.preventDefault();try{inkEl.setPointerCapture(e.pointerId)}catch(_){}WT.drawing=true;WT.last=inkPos(e);inkDot(WT.last)});
+inkEl.addEventListener('pointermove',e=>{if(!WT.drawing)return;e.preventDefault();const p=inkPos(e);inkLine(WT.last,p);WT.last=p});
+['pointerup','pointercancel','pointerleave'].forEach(ev=>inkEl.addEventListener(ev,()=>{WT.drawing=false}));
+function inkStyle(ctx){ctx.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()||'#E8743B';ctx.fillStyle=ctx.strokeStyle;ctx.lineCap='round';ctx.lineJoin='round';ctx.lineWidth=Math.max(10*WT.dpr,(WT.size||200)*0.075)}
+function inkDot(p){const ctx=inkEl.getContext('2d');inkStyle(ctx);ctx.beginPath();ctx.arc(p[0],p[1],ctx.lineWidth/2,0,Math.PI*2);ctx.fill();WT.inked=true}
+function inkLine(a,b){const ctx=inkEl.getContext('2d');inkStyle(ctx);ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();WT.inked=true}
+// compare the child's ink with the letter shape
+function checkTrace(){
+  if(!WT.inked){setHeard('#wrHeard','Trace the grey letter with your finger first.','no');return}
+  const S=160,H=Math.round(S*inkEl.height/inkEl.width);
+  const mk=()=>{const c=document.createElement('canvas');c.width=S;c.height=H;return c};
+  const core=mk(),zone=mk(),ink=mk();
+  drawLetter(core.getContext('2d'),S,H,'core');drawLetter(zone.getContext('2d'),S,H,'zone');
+  ink.getContext('2d').drawImage(inkEl,0,0,S,H);
+  const A=core.getContext('2d').getImageData(0,0,S,H).data,Z=zone.getContext('2d').getImageData(0,0,S,H).data,I=ink.getContext('2d').getImageData(0,0,S,H).data;
+  // thicken ink a little so thin letters still count as covered
+  const inkAt=new Uint8Array(S*H);for(let k=0;k<S*H;k++)inkAt[k]=I[k*4+3]>40?1:0;
+  const near=new Uint8Array(S*H),R=3;
+  for(let y=0;y<H;y++)for(let x=0;x<S;x++){if(!inkAt[y*S+x])continue;for(let dy=-R;dy<=R;dy++)for(let dx=-R;dx<=R;dx++){const yy=y+dy,xx=x+dx;if(yy>=0&&yy<H&&xx>=0&&xx<S)near[yy*S+xx]=1}}
+  let coreN=0,coreHit=0,inkN=0,inkIn=0;
+  for(let k=0;k<S*H;k++){if(A[k*4+3]>100){coreN++;if(near[k])coreHit++}if(inkAt[k]){inkN++;if(Z[k*4+3]>40)inkIn++}}
+  const cover=coreN?coreHit/coreN:0,inside=inkN?inkIn/inkN:0;
+  const t=wrItems()[WT.i][0];
+  if(cover>=0.6&&inside>=0.7){
+    const done=store.get('wdone',[]);const first=!done.includes(wrKey(t));
+    if(first){done.push(wrKey(t));store.set('wdone',done);addStar();const tile=$('#wrGrid').children[WT.i];if(tile)tile.classList.add('done')}
+    setHeard('#wrHeard',(cover>=0.8&&inside>=0.85?'🌟 Beautiful writing!':'✓ Well done!')+(first?' +1 ⭐':''),'ok');
+    sayMany([['Well done!','en']]);
+  }else if(cover<0.6){setHeard('#wrHeard',`Almost! Trace over all of the grey letter. (${Math.round(cover*100)}% covered)`,'no')}
+  else{setHeard('#wrHeard','Good try! Stay inside the grey letter.','no')}
+}
+$('#wrDone').onclick=checkTrace;
+$('#wrClear').onclick=()=>{clearInk();setHeard('#wrHeard','')};
+$('#wrHear').onclick=wrSay;
+$('#wrPrev').onclick=()=>{showTrace(WT.i-1);wrSay()};
+$('#wrNext').onclick=()=>{showTrace(WT.i+1);wrSay()};
+window.addEventListener('resize',()=>{if(cur==='wr'){sizeCanvases();drawGuide();clearInk()}});
+
 /* ================= start ================= */
 homeStars();
 let last='';try{last=localStorage.getItem('pd_last')||''}catch(e){}
-if(G_KINDS.includes(last))openGrammar(last);else if(PACKS[last])openLang(last);else goHome();
+if(last==='wr')openWrite();else if(G_KINDS.includes(last))openGrammar(last);else if(PACKS[last])openLang(last);else goHome();
 
 /* ================= offline app (service worker) ================= */
 if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{})})}
