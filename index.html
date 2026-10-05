@@ -162,6 +162,11 @@ nav.tabs[hidden]{display:none}
 #wInk{touch-action:none;cursor:crosshair}
 #wrGrid .tile{font-size:28px}
 #wrGrid .tile.done::after{content:"⭐";display:block;font-size:12px;line-height:1}
+.school{display:flex;align-items:center;gap:12px;background:var(--card);border:2px solid var(--line);border-left:8px solid var(--school,#1E2A78);border-radius:18px;padding:10px 14px;margin-top:6px}
+.school[hidden]{display:none}
+.school img{width:52px;height:52px;object-fit:contain;border-radius:10px;flex:none}
+.school span{display:block;font-size:13px;color:var(--soft);line-height:1.2}
+.school b{display:block;font-size:20px;line-height:1.2}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -174,6 +179,10 @@ nav.tabs[hidden]{display:none}
 
 <div class="wrap">
   <section class="panel" id="home">
+    <div class="school" id="schoolBox" hidden>
+      <img id="schoolLogo" alt="" hidden>
+      <div><span>Learning app of</span><b id="schoolName"></b></div>
+    </div>
     <p class="hello">Let's read!</p>
     <p class="hello-sub">Choose a language to start.</p>
     <div class="langs">
@@ -330,6 +339,10 @@ nav.tabs[hidden]{display:none}
 <nav class="tabs" id="tabs" hidden aria-label="Steps"></nav>
 
 <script>
+/* ================= SCHOOL BRANDING (edit for each school; leave name empty for the normal app) ================= */
+// Example: const SCHOOL={name:'Sunrise Public School, Ludhiana',logo:'school-logo.png',color:'#0B6E4F'};
+const SCHOOL={name:'Desh Bhagat Public School',logo:'school-logo.png',color:'#1E2A78'};
+
 /* ================= helpers ================= */
 let cur=null,P=null,readTries=0;const G_KINDS=['gr','wb','sn']; // declared first: used by functions that run at startup
 const $=s=>document.querySelector(s);
@@ -1186,6 +1199,14 @@ $('#wrHear').onclick=wrSay;
 $('#wrPrev').onclick=()=>{showTrace(WT.i-1);wrSay()};
 $('#wrNext').onclick=()=>{showTrace(WT.i+1);wrSay()};
 window.addEventListener('resize',()=>{if(cur==='wr'){sizeCanvases();drawGuide();clearInk()}});
+
+/* ================= school banner ================= */
+if(SCHOOL.name){
+  $('#schoolName').textContent=SCHOOL.name;$('#schoolBox').hidden=false;
+  if(SCHOOL.color)document.documentElement.style.setProperty('--school',SCHOOL.color);
+  if(SCHOOL.logo){const im=$('#schoolLogo');im.src=SCHOOL.logo;im.hidden=false;im.onerror=()=>{im.hidden=true}}
+  document.title=SCHOOL.name+' · Padhai';
+}
 
 /* ================= start ================= */
 homeStars();
