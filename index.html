@@ -341,7 +341,7 @@ nav.tabs[hidden]{display:none}
 <script>
 /* ================= SCHOOL BRANDING (edit for each school; leave name empty for the normal app) ================= */
 // Example: const SCHOOL={name:'Sunrise Public School, Ludhiana',logo:'school-logo.png',color:'#0B6E4F'};
-const SCHOOL={name:'Desh Bhagat Public School',logo:'school-logo.png',color:'#1E2A78'};
+const SCHOOL={name:'',logo:'',color:''};
 
 /* ================= helpers ================= */
 let cur=null,P=null,readTries=0;const G_KINDS=['gr','wb','sn']; // declared first: used by functions that run at startup
@@ -492,9 +492,39 @@ function loadVoices(){
   voices.en=v.find(x=>/en[-_]IN/i.test(x.lang))||v.find(x=>/en[-_]GB/i.test(x.lang))||v.find(x=>/^en/i.test(x.lang))||null;
   checkVoice();
 }
+/* ================= Punjabi voice from audio files (audio/pa/b_0.json … b_f.json) ================= */
+// Made once with the PunjabiAudio Apps Script. If the files are missing, the app falls back to the phone's voice.
+const PA_AUDIO={map:new Map(),loading:null,el:null};
+const SPEAK={token:0};
+function paClean(t){return (t||'').normalize('NFC').replace(/^[\s।!?.,]+|[\s।!?.,]+$/g,'').replace(/\s+/g,' ')}
+function paKey(t){let h=0x811c9dc5;for(let i=0;i<t.length;i++){h^=t.charCodeAt(i);h=Math.imul(h,0x01000193)>>>0}return h.toString(16).padStart(8,'0')}
+function paLoad(){
+  if(PA_AUDIO.loading)return PA_AUDIO.loading;
+  PA_AUDIO.loading=Promise.all('0123456789abcdef'.split('').map(c=>fetch(`audio/pa/b_${c}.json`).then(r=>r.ok?r.json():{}).catch(()=>({}))))
+    .then(arr=>{arr.forEach(o=>{for(const k in o)PA_AUDIO.map.set(k,o[k])});checkVoice()});
+  return PA_AUDIO.loading;
+}
+// find recorded clips for a Punjabi text: whole text, else each part, else each word; null = use phone voice
+function paPlan(text){
+  if(!PA_AUDIO.map.size)return null;
+  const whole=PA_AUDIO.map.get(paKey(paClean(text)));if(whole)return[whole];
+  const out=[];
+  for(const seg of String(text).split(/[।!?,.]+/)){const sg=paClean(seg);if(!sg)continue;
+    const a=PA_AUDIO.map.get(paKey(sg));if(a){out.push(a);continue}
+    for(const w of sg.split(' ')){const b=PA_AUDIO.map.get(paKey(w));if(!b)return null;out.push(b)}}
+  return out.length?out:null;
+}
+function playClips(clips,rate,token){return new Promise(res=>{
+  let i=0;const next=()=>{if(token!==SPEAK.token||i>=clips.length)return res();
+    const a=PA_AUDIO.el||(PA_AUDIO.el=new Audio());a.src='data:audio/mpeg;base64,'+clips[i++];
+    a.playbackRate=Math.max(0.7,Math.min(1.2,(rate||0.8)/0.8));a.onended=next;a.onerror=next;
+    const pr=a.play();if(pr&&pr.catch)pr.catch(next)};
+  next()})}
+function stopSpeech(){SPEAK.token++;if('speechSynthesis' in window)speechSynthesis.cancel();if(PA_AUDIO.el){try{PA_AUDIO.el.pause()}catch(e){}}}
 function say(t,rate){
+  if(cur==='pa'){paLoad();const clips=paPlan(t);if(clips){stopSpeech();const h={onend:null};playClips(clips,rate,SPEAK.token).then(()=>{if(h.onend)h.onend()});return h}}
   if(!('speechSynthesis' in window)||!cur)return null;
-  speechSynthesis.cancel();let u;
+  stopSpeech();let u;
   if(cur==='pa'&&!voices.pa&&voices.hi){u=new SpeechSynthesisUtterance(toDeva(t));u.voice=voices.hi;u.lang='hi-IN'}
   else{u=new SpeechSynthesisUtterance(t);const vk=G_KINDS.includes(cur)?'en':cur;const v=voices[vk];if(v){u.voice=v;u.lang=v.lang}else u.lang={hi:'hi-IN',pa:'pa-IN',en:'en-IN'}[vk]}
   u.rate=rate||0.8;speechSynthesis.speak(u);return u;
@@ -506,15 +536,24 @@ function makeUtter(t,vk,rate){
   else{u=new SpeechSynthesisUtterance(t);const v=voices[vk];if(v){u.voice=v;u.lang=v.lang}else u.lang={hi:'hi-IN',pa:'pa-IN',en:'en-IN'}[vk]}
   u.rate=rate||0.8;return u;
 }
-function sayMany(parts,rate){
-  if(!('speechSynthesis' in window))return;
-  speechSynthesis.cancel();parts.forEach(([t,vk])=>speechSynthesis.speak(makeUtter(t,vk,rate)));
+function ttsPart(t,vk,rate,token){return new Promise(res=>{
+  if(!('speechSynthesis' in window)||token!==SPEAK.token)return res();
+  const u=makeUtter(t,vk,rate);let done=false;const fin=()=>{if(!done){done=true;res()}};
+  u.onend=fin;u.onerror=fin;speechSynthesis.speak(u);setTimeout(fin,Math.max(4000,String(t).length*250))})}
+async function sayMany(parts,rate){
+  stopSpeech();const token=SPEAK.token;
+  if(parts.some(p=>p[1]==='pa'))await Promise.race([paLoad(),new Promise(r=>setTimeout(r,1500))]);
+  for(const [t,vk] of parts){
+    if(token!==SPEAK.token)return;
+    const clips=vk==='pa'?paPlan(t):null;
+    if(clips)await playClips(clips,rate,token);else await ttsPart(t,vk,rate,token);
+  }
 }
 function checkVoice(){
   const n=$('#voiceNote');if(!cur){n.hidden=true;return}
   let msg='';
   if(!('speechSynthesis' in window))msg='This browser cannot play sounds. Try opening the page in Chrome.';
-  else if(cur==='pa'&&!voices.pa)msg=voices.hi?'No Punjabi voice found, so a Hindi voice reads the words. It sounds close but not exact. Install a Punjabi text-to-speech voice in your phone settings for the best sound.':'No Punjabi voice found. Install a Punjabi text-to-speech voice in your phone settings, then reopen this page.';
+  else if(cur==='pa'&&!voices.pa&&!PA_AUDIO.map.size)msg=voices.hi?'No Punjabi voice found, so a Hindi voice reads the words. It sounds close but not exact. Install a Punjabi text-to-speech voice in your phone settings for the best sound.':'No Punjabi voice found. Install a Punjabi text-to-speech voice in your phone settings, then reopen this page.';
   else if(cur==='hi'&&!voices.hi)msg='No Hindi voice found, so sounds may be unclear. Install a Hindi text-to-speech voice in your phone settings, then reopen this page.';
   n.textContent=msg;n.hidden=!msg||!voiceChecked;
 }
@@ -544,7 +583,7 @@ function goHome(){
   homeStars();checkVoice();try{localStorage.setItem('pd_last','')}catch(e){}
 }
 function openLang(l){
-  cur=l;P=PACKS[l];
+  cur=l;P=PACKS[l];if(l==='pa')paLoad();
   document.documentElement.lang=P.htmlLang;document.body.style.fontFamily=P.font;
   document.documentElement.style.setProperty('--accent',P.accent);document.documentElement.style.setProperty('--accent-ink',P.accentInk);
   $('#title').textContent=P.title;$('#back').hidden=false;$('#stars').hidden=false;

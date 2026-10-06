@@ -1,5 +1,5 @@
 // Padhai offline cache. Change VERSION whenever you upload a new index.html.
-const VERSION = 'dbps-v1';
+const VERSION = 'padhai-v12';
 const SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-maskable-512.png', './apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
@@ -19,6 +19,7 @@ self.addEventListener('fetch', e => {
   }
   // Everything else (fonts, icons): cache first, then save what we fetch
   e.respondWith(caches.match(req).then(hit => hit || fetch(req).then(r => {
-    const copy = r.clone(); caches.open(VERSION).then(c => c.put(req, copy)); return r;
+    if (r.ok || r.type === 'opaque') { const copy = r.clone(); caches.open(VERSION).then(c => c.put(req, copy)); }
+    return r;
   }).catch(() => hit)));
 });
