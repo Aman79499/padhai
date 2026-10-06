@@ -500,7 +500,7 @@ function paClean(t){return (t||'').normalize('NFC').replace(/^[\sред!?.,]+|[\sре
 function paKey(t){let h=0x811c9dc5;for(let i=0;i<t.length;i++){h^=t.charCodeAt(i);h=Math.imul(h,0x01000193)>>>0}return h.toString(16).padStart(8,'0')}
 function paLoad(){
   if(PA_AUDIO.loading)return PA_AUDIO.loading;
-  PA_AUDIO.loading=Promise.all('0123456789abcdef'.split('').map(c=>fetch(`audio/pa/b_${c}.json`).then(r=>r.ok?r.json():{}).catch(()=>({}))))
+  PA_AUDIO.loading=Promise.all('0123456789abcdef'.split('').map(c=>fetch(`audio/pa/audio/pa/b_${c}.json`).then(r=>r.ok?r.json():{}).catch(()=>({}))))
     .then(arr=>{arr.forEach(o=>{for(const k in o)PA_AUDIO.map.set(k,o[k])});checkVoice()});
   return PA_AUDIO.loading;
 }
